@@ -1,5 +1,8 @@
 # Employee Tracker
 
+## Description
+This app is created to help managing a company's employee database. 
+
 ## User Story
 ```
 AS A business owner
@@ -58,3 +61,20 @@ THEN I am prompted to enter the employee’s
 WHEN I choose to update an employee role
 THEN I am prompted to select an employee to update and their new role and this information is updated in the database
 ```
+
+## Instruction
+To start the app, run the command "node index". You will be prompted with a list of things you can do.
+Please watch this short Youtube video to see how the app is running: https://youtu.be/XC1LdwiztjA
+
+## Usage
+This app is using Node.js, Inquirer and MySQL
+
+## Questions
+
+* Email me for more information @:
+
+phongsu20@gmail.com
+
+* Check out my other projects on Github @:
+
+https://www.github.com/fuuko08
