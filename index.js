@@ -110,12 +110,11 @@ function viewAllRoles() {
 
 // function WHEN I choose to view all employees
 function viewAllEmps() {
-    const sql = `SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, department.name AS department,
-                CONCAT(manager.first_name, ' ', manager.last_name) AS manager 
+    const sql = `SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, department.name AS department, employee.manager_id
                 FROM employee
-                LEFT JOIN employee ON manager.id = employee.manager_id
-                LEFT JOIN role ON employee.role_id = role_id
-                LEFT JOIN department ON role.department_id = department.id;`;
+                LEFT JOIN role ON employee.role_id = role.id
+                LEFT JOIN department ON role.department_id = department.id
+                ORDER BY employee.id;`;
     db.promise()
       .query(sql)
       .then(([rows, _]) => {
@@ -177,13 +176,12 @@ function addDept() {
             }
         ]).then(function(answers) {
             const sql = 'INSERT INTO department SET ?';
-            db.promise()
-            .query(sql, 
+            db.query(sql, 
                 {
                     name: answers.name,
                     id: answers.id
                 },
-                function(err) {
+                function(err, res) {
                     if (err) throw err
                     console.table(res);
                     init();
@@ -194,11 +192,6 @@ function addDept() {
 
 // function WHEN I choose to add a role
 function addRole() {
-    const sql = `SELECT role.title AS title, role.salary AS salary 
-                FROM role 
-                LEFT JOIN department.name AS department FROM department;`;
-    db.promise()
-    .query(sql, function(err, res) {
     inquirer
         .prompt([
             {
@@ -217,7 +210,8 @@ function addRole() {
                 message: 'Choose the department for this title.',
                 choices: selectDepartment()
             }
-        ]).then(function(answers) {
+        ])
+        .then(function(answers) {
             var departmentID = selectDepartment().indexOf(answers.choice) + 1
             db.query("INSERT INTO role SET ?",
                 {
@@ -225,15 +219,15 @@ function addRole() {
                     salary: answers.salary,
                     department_id: departmentID
                 },
-                function(err) {
+                function(err, answers) {
                     if (err) throw err
                     console.table(answers);
                     init();
                 }
             )
-        });   
-    });
-};
+        })   
+    };
+
 
 // function WHEN I choose to add an employee
 function addEmp() {
@@ -271,7 +265,7 @@ function addEmp() {
                     manager_id: managerId,
                     role_id: roleId
                 },
-                function(err) {
+                function(err, answers) {
                     if (err) throw err
                     console.table(answers)
                     init()
@@ -282,43 +276,28 @@ function addEmp() {
 
 // function WHEN I choose to update an employee role
 function updateRole() {
-    const sql = `SELECT employee.last_name, role.title FROM employee
-                JOIN role ON employee.role_id = role.id;`;
+    const sql = "SELECT first_name, last_name, id FROM employee";
     db.query(sql, function(err, res) {
-        if (err) throw err;
         inquirer   
             .prompt([
                 {
-                    name: "lastName",
-                    type: "list",
-                    choices: function() {
-                        var lastname = [];
-                        for (var i = 0; i < res.length; i++) {
-                            lastname.push(res[i].lastName);
-                        }
-                        return lastName;
-                    },
-                    message: "Enter the employee's last name."
+                    name: "name",
+                    type: "input",
+                    message: "Enter the first name of the employee who you like to update."
                 },
                 {
                     name: "role",
-                    type: "list",
-                    message: "Enter the employee's new title.",
-                    choices: selectRole()
+                    type: "input",
+                    message: "Enter the employee's new role id.",
                 }
-            ]).then(function(answers) {
-                let roleId = selectRole().indexOf(answers.role) + 1;
-                db.query("UPDATE employee SET WHERE ?",
-                    {
-                        last_name: answers.lastName,
-                        role_id: roleId
-                    },
-                    function (err) {
+            ]).then(function(res) {
+                db.query("UPDATE employee SET role_id = ? WHERE first_name = ?", [res.role, res.name],
+                    function (err, res) {
                         if (err) throw err;
-                        console.table(answers);
+                        console.table(res);
                         init();
                     }
                 );
-            });
+            })
     });
 };
